@@ -17,8 +17,6 @@
 
 Inicio creando el archivo `gestor_notas.py` en VSC.
 
-## `main()`
-
 Empiezo buscando el **arte ascii** de [cinnamoroll](https://emojicombos.com/cinnamoroll-ascii-art).
 
 ```bash
