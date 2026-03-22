@@ -59,8 +59,12 @@ Después creo el menú de opciones. En lugar de texto plano uso un `Panel` de `r
 
 Me creo la lista vacía de `notas = []` donde irán guardándose los diccionarios y abro un bucle `while true` para que el menú se repita hasta que el usuario decida salirse.
 
-Teniendo en cuenta la [Jesubiblia](https://github.com/SugusGamberra/JesubibliaDePython) en el **Versículo 3:1** para hacer el menú. El cuerpo me pedía usar `match-case` pero sigo al dedillo la sabiduría de Jesús Deidad y no acometer al pecado 🙂‍↕️ ya que también en los requisitos del proyecto se pide usar estos condicionales, así que he sido buena cristiana 🙂‍↕️
+Teniendo en cuenta la [Jesubiblia](https://github.com/SugusGamberra/JesubibliaDePython) en el **Versículo 3:1** para hacer el menú. El cuerpo me pedía usar `match-case` pero sigo al dedillo la sabiduría de Jesús Deidad y no acometer al pecado 👀 ya que también en los requisitos del proyecto se pide usar estos condicionales, así que he sido buena cristiana 🙂‍
 
 Para los easter eggs (que claro, trampuchis porque verás el código y sabrás cuáles son 😢) en la validación del menú he colocado 2 comandos secretos. Si en vez de número escribes otra palabra, se abre un "portal" oculto 🫢
+
+Por el momento se ve así:
+
+<img src="./public/img/capturas/1.png" width="300" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
 
 > Por hoy lo dejo aquí, seguiré poquito a poco en próximos días
