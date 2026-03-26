@@ -218,3 +218,18 @@ Probamos que funcione y...
 <img src="./public/img/capturas/17.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
 
 <img src="./public/img/capturas/18.png" width="300" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+### Funcion paraa descargar de Notion
+
+Como ahora cada que cerramos la consola y la abrimos le da amnesia, voy a crear una función que haga una consulta a la API de notion (aasí no guarrineamos nuestro pc llenándolo de cosas y archivos "basura") y  lea lo que hay y lo muestre en la terminal :P
+
+<img src="./public/img/capturas/19.png" width="400" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+Para conseguir esta sincronización, he creado la función `descargar_de_notion()`. Extraer datos de la API de Notion es un poco laberíntico por cómo estructuran su JSON, así que lo he resuelto en estos pasos:
+
+1. **El Endpoint `/query`**: Para leer el contenido de una base de datos, Notion nos pide hacer una petición `POST` (curiosamente no es un `GET`) a la ruta `/query` de nuestra tabla. Por supuesto, le paso mi `NOTION_TOKEN` en las cabeceras para que me abra las puertas.
+2. **Desempaquetando el JSON**: Si la respuesta es un `200` (todo OK), convierto el paquete con `respuesta.json()` y extraigo la lista principal que viene dentro de la clave `"results"`. Ahí es donde está cada una de las filas de mi tabla.
+3. **Programación defensiva con `.get()`**: En Notion es muy fácil dejar una celda en blanco por accidente. Si en mi código intento leer una celda vacía a lo bruto (ej: `props["Categoría"]`), Python me lanzaría un error rompiendo todo el programa y mi paz mental :) Para evitarlo uso el método `.get()`. Si el dato no existe, me devuelve un valor vacío de forma segura y yo le asigno un texto por defecto (como "Sin contenido" o "General").
+4. **Arranque en el `main()`**: Una vez que el bucle `for` reconstruye todos los diccionarios con el título, categoría y contenido, la función devuelve la lista llena. Finalmente, me fui a mi `def main()` y cambié la variable inicial: en lugar de arrancar con un `notas = []` vacío, ahora arranca ejecutando `notas = descargar_de_notion()`.
+
+Así, nada más ejecutar el script, el programa se conecta a la nube, absorbe la información y me rellena el menú con mis apuntes listos para usar ;3
