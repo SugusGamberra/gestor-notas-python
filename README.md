@@ -262,3 +262,24 @@ Para hacer esto realidad, he creado la función `abrir_pokedex()` y he vuelto a 
 5. **Control de errores (Try/Except)**: Si el usuario se inventa un nombre o escribe mal, la API devuelve un código distinto a 200 (normalmente un 404). Mi código lo detecta y en vez de crashear, saca un aviso amistoso en rojo. También capturo las excepciones de conexión por si nos quedamos sin internet.
 
 <img src="./public/img/capturas/23.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+### Suerte
+
+Como no podía ser de otra forma, mi vena espiritual me pedía a gritos meter una tirada de Tarot en la opción de la suerte. Pero en lugar de ser conformista y simplemente copiar un diccionario gigante de cartas en mi código de Python, decidí llevar el proyecto al siguiente nivel: conectar este gestor local con un proyecto mio personal, un ecosistema de proyectos completo jeje :P
+
+1. **Creación de mi propia API (Lado Web)**: En el proyecto de mi web (desplegado en Vercel y hecho con Astro), las cartas viven en un archivo de datos. Para poder sacarlas de ahí, me creé un nuevo endpoint que coge ese diccionario de cartas y lo expone en formato JSON
+
+<img src="./public/img/capturas/25.png" width="300" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+2. **Consumo de la API (Lado Python)**: De vuelta a mi gestor de notas local, importé la librería nativa `random`. En la función `tirar_carta_suerte()`, uso de nuevo `requests.get()` para llamar directamente a la URL de mi propia web.
+3. **Aleatoriedad**: Una vez que Python recibe el paquete JSON con las 78 cartas uso `random.choice(cartas)` para que coja una al azar
+
+<img src="./public/img/capturas/24.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+4. **Renderizado**: Eextraigo el nombre y el mensaje de esa carta ganadora y lo imprimo en la consola usando un `Panel` de `rich`.
+
+Lo wapo de esto es que están sincronizados. Si el día de mañana decido actualizar el mensaje de "La Emperatriz" o añadir más cartas en el código de mi web, mi gestor de notas de Python se actualizará al instante sin tener que picar nada de codigo jeje
+
+---
+
+> Y hasta aquí, fin del proyecto!! He intentado documentar el proceso de creación de absolutamente todo para que quede constancia, de forma más cercana, todos los pasos dados para obtener un gestor de notas bonito bonito :P

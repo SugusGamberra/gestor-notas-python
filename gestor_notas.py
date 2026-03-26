@@ -2,6 +2,8 @@
 import sys
 import os
 import requests
+#para easter egg
+import random
 # cargo el .env
 from dotenv import load_dotenv
 
@@ -365,6 +367,39 @@ def abrir_pokedex():
         except Exception as e:
             consola.print(f"[italic red]Error de conexión con la Liga Pokémon: {e}[/italic red]")
 
+#menu secretillo 2 suerte
+def tirar_carta_suerte():
+    consola.print("\n[bold purple]☁️ Conectando con las nubes de Clouds & Arcana... ☁️[/bold purple]")
+    
+    # saco la url de la api q he creado en el otro proyecto
+    url = "https://cloudsandarcana.vercel.app/api/tarot"
+    
+    try:
+        respuesta = requests.get(url)
+        
+        if respuesta.status_code == 200:
+            cartas = respuesta.json()
+            
+            # elegimos una carta al azar de toda mi lista
+            carta_hoy = random.choice(cartas)
+            
+            nombre = carta_hoy["nombre"]
+            mensaje = carta_hoy["mensaje"]
+            
+            info = (
+                f"🃏 [bold]Tu Carta:[/bold] {nombre}\n"
+                f"🔮 [bold]Mensaje:[/bold] {mensaje}"
+            )
+            
+            consola.print(Panel(info, title="☁️ ENERGÍA DE HOY ☁️", border_style="purple", expand=False))
+            consola.print("[italic purple]Recuerda: El oráculo solo guía, tú tienes el poder de tu destino.[/italic purple]\n")
+            
+        else:
+            consola.print(f"[bold red]Error de conexión con la API: (Código: {respuesta.status_code}).[/bold red]\n")
+            
+    except Exception as e:
+        consola.print(f"[italic red]Error de conexión astral: {e}[/italic red]\n")
+
 #MAIN
 def main():
     #Bucle principal para que llame al resto de ufnciones
@@ -397,7 +432,7 @@ def main():
         elif opcion == 'pokemon':
             abrir_pokedex()
         elif opcion == 'suerte':
-            consola.print("[bold purple]Buscando en la Jesubiblia si hoy tendrás suerte o no... (WiP)[/bold purple]")
+            tirar_carta_suerte()
         else:
             consola.print("[bold red]Opción no válida, inténtalo de nuevo![/bold red]")
             
