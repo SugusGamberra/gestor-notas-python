@@ -125,6 +125,55 @@ def subir_a_notion(titulo, categoria, contenido):
     except Exception as e:
         consola.print(f"[italic red]Error de conexión: {e}[/italic red]\n")
 
+#Función para bajar las notas de notion y leerlas en terminal
+def descargar_de_notion():
+    consola.print("[italic cyan]☁️ Sincronizando con Notion...[/italic cyan]")
+    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
+    
+    headers = {
+        "Authorization": f"Bearer {NOTION_TOKEN}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28"
+    }
+    
+    notas_descargadas = []
+    try:
+        # Para leer una BBDD en Notion hacemos un POST al endpoint query
+        respuesta = requests.post(url, headers=headers)
+        
+        if respuesta.status_code == 200:
+            datos = respuesta.json()
+            resultados = datos.get("results", [])
+            
+            for pagina in resultados:
+                props = pagina["properties"]
+                
+                # Extraemos los datos con .get() por si alguna celda en Notion está vacía (así no peta)
+                titulo_data = props.get("Título", {}).get("title", [])
+                titulo = titulo_data[0]["text"]["content"] if titulo_data else "Sin título"
+                
+                cat_data = props.get("Categoría", {}).get("rich_text", [])
+                categoria = cat_data[0]["text"]["content"] if cat_data else "General"
+                
+                cont_data = props.get("Contenido", {}).get("rich_text", [])
+                contenido = cont_data[0]["text"]["content"] if cont_data else "Sin contenido"
+                
+                # Inyectamos la nota recuperada a nuestra lista
+                notas_descargadas.append({
+                    "titulo": titulo,
+                    "categoria": categoria,
+                    "contenido": contenido
+                })
+            
+            consola.print(f"[bold green]¡Listo! Se han cargado {len(notas_descargadas)} notas desde la nube 🌸[/bold green]\n")
+            return notas_descargadas
+        else:
+            consola.print(f"[italic red]No se pudieron descargar las notas. Código: {respuesta.status_code}[/italic red]\n")
+            return []
+    except Exception as e:
+        consola.print(f"[italic red]Error de conexión al descargar: {e}[/italic red]\n")
+        return []
+
 # Añadir notas:
 def add_nota(notas):
     consola.print("\n[bold pink1]🗒️ Nueva Nota 🗒️[/bold pink1]")
@@ -269,7 +318,9 @@ def eliminar_nota(notas):
 #MAIN
 def main():
     #Bucle principal para que llame al resto de ufnciones
-    notas = []
+    #notas = []
+    #en vez de empezar la lista vacia llamamos a notion nada mas abrir el gestor jeje
+    notas = descargar_de_notion()
     
     #voy a hardcodear para ver el resultado, lo dejare todo comentado en el futuro para q veas el proceso jeje
     #notas = [
@@ -291,7 +342,7 @@ def main():
         elif opcion == '4':
             eliminar_nota(notas)
         elif opcion == '5':
-            consola.print("[yellow]Cerrando el gestor de notas... (WiP)[/yellow]")
+            consola.print("[yellow]Cerrando el gestor de notas. ¡Hasta prontooo! ☁️[/yellow]")
             break
         elif opcion == 'pokemon':
             consola.print("[bold yellow]Abriendo la Pokedex... (Wip)[/bold yellow]")
