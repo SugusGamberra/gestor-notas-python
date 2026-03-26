@@ -45,16 +45,15 @@ def mostrar_menu():
         "[bold pink1]2. [/bold pink1] Ver todas las notas\n"
         "[bold pink1]3. [/bold pink1] Buscar una nota por palabra clave\n"
         "[bold pink1]4. [/bold pink1] Eliminar una nota\n"
-        "[bold pink1]5. [/bold pink1] Salir\n"
+        "[bold pink1]5. [/bold pink1] Modificar una nota\n"
+        "[bold pink1]6. [/bold pink1] Salir\n"
     )
-    consola.print(Panel(menu_texto, title="☁️Menú Principal☁️", border_style="pink1", expand=False))
+    consola.print(Panel(menu_texto, title="☁️ Menú Principal ☁️", border_style="pink1", expand=False))
 
 # IMPLEMENTACIÓN DE OPCIONES DEL MENÚ
-# Ver notas:
 
+# Ver notas:
 def ver_notas(notas):
-    """Muestra todas las notas guardadas en formato tabla y estadísticas."""
-    
     # Si la lista está vacía, avisamos y salimos de la función
     if not notas:
         consola.print("[bold yellow]Aún no tienes ninguna nota guardada. ¡Anímate a escribir la primera![/bold yellow]\n")
@@ -101,7 +100,7 @@ def subir_a_notion(titulo, categoria, contenido):
         "Notion-Version": "2022-06-28"
     }
     
-    # El diccionario con la estructura exacta que espera Notion
+    # El diccionario con la estructura exacta que espera Notion (q es un json montao con la estructura q pide notion)
     data = {
         "parent": {"database_id": DATABASE_ID},
         "properties": {
@@ -175,6 +174,106 @@ def descargar_de_notion():
     except Exception as e:
         consola.print(f"[italic red]Error de conexión al descargar: {e}[/italic red]\n")
         return []
+
+# Fuyncion para editar las notas
+def actualizar_en_notion(titulo_original, nuevo_titulo, nueva_categoria, nuevo_contenido):
+    consola.print("[italic cyan]☁️ Buscando la nota en Notion para actualizarla...[/italic cyan]")
+    
+    # Buscar el ID exacto de la página (query)
+    url_query = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
+    headers = {
+        "Authorization": f"Bearer {NOTION_TOKEN}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28"
+    }
+    
+    # Le decimos a Notion que busque exactamente el título antiguo
+    filtro = {
+        "filter": {
+            "property": "Título",
+            "title": {"equals": titulo_original}
+        }
+    }
+    
+    try:
+        respuesta_query = requests.post(url_query, headers=headers, json=filtro)
+        if respuesta_query.status_code == 200:
+            resultados = respuesta_query.json().get("results", [])
+            
+            if not resultados:
+                consola.print("[italic yellow]No se encontró la nota original en la nube. Solo se modificará en local.[/italic yellow]")
+                return
+            
+            # Cogemos el ID de la primera coincidencia
+            page_id = resultados[0]["id"]
+            
+            # Actualizo la página usando PATCH
+            url_update = f"https://api.notion.com/v1/pages/{page_id}"
+            
+            datos_nuevos = {
+                "properties": {
+                    "Título": {"title": [{"text": {"content": nuevo_titulo}}]},
+                    "Categoría": {"rich_text": [{"text": {"content": nueva_categoria}}]},
+                    "Contenido": {"rich_text": [{"text": {"content": nuevo_contenido}}]}
+                }
+            }
+            
+            # Hacemos la petición PATCH para inyectar los datos nuevos
+            respuesta_update = requests.patch(url_update, headers=headers, json=datos_nuevos)
+            
+            if respuesta_update.status_code == 200:
+                consola.print("[italic green]☁️ Nota actualizada en tu Notion ☁️[/italic green]\n")
+            else:
+                consola.print(f"[italic red]Falló la actualización en Notion (Código: {respuesta_update.status_code}).[/italic red]\n")
+        else:
+            consola.print(f"[italic red]Error al buscar en Notion (Código: {respuesta_query.status_code}).[/italic red]\n")
+            
+    except Exception as e:
+        consola.print(f"[italic red]Error de conexión: {e}[/italic red]\n")
+
+# funcion para borrar tb de notion:
+def borrar_de_notion(titulo):
+    # buscamos el ID exacto de la nota en la base de datos
+    url_query = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
+    
+    headers = {
+        "Authorization": f"Bearer {NOTION_TOKEN}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28"
+    }
+    
+    # Le pedimos a Notion que filtre y nos traiga solo la nota con este título
+    filtro = {
+        "filter": {
+            "property": "Título",
+            "title": {
+                "equals": titulo
+            }
+        }
+    }
+    
+    try:
+        # Hacemos la busqueda
+        respuesta_busqueda = requests.post(url_query, headers=headers, json=filtro)
+        resultados = respuesta_busqueda.json().get("results", [])
+        
+        # Si encuentra la nota, sacamos su ID oculto
+        if resultados:
+            page_id = resultados[0]["id"]
+            
+            # ahora que tenemos el ID, le decimos a Notion que la archive
+            url_delete = f"https://api.notion.com/v1/pages/{page_id}"
+            data_delete = {"archived": True}
+            
+            # Usamos PATCH para actualizar el estado de la página
+            respuesta_borrado = requests.patch(url_delete, headers=headers, json=data_delete)
+            
+            if respuesta_borrado.status_code == 200:
+                consola.print("[italic cyan]☁️ Registro eliminado también de tu Notion ☁️[/italic cyan]\n")
+            else:
+                consola.print(f"[italic red]No se pudo borrar de la nube. Código: {respuesta_borrado.status_code}[/italic red]\n")
+    except Exception as e:
+        consola.print(f"[italic red]Error místico al intentar borrar en la nube: {e}[/italic red]\n")
 
 # Añadir notas:
 def add_nota(notas):
@@ -310,11 +409,64 @@ def eliminar_nota(notas):
         if confirmacion == 's':
             notas.pop(numero - 1)
             consola.print(f"[bold green]¡Nota '{titulo}' eliminada con éxito![/bold green]\n")
+            # para borrar d notion tb
+            borrar_de_notion(titulo)
         else:
             consola.print("[yellow]Operación cancelada. La nota sigue guardada.[/yellow]\n")
         
     else:
         # Si mete un número superior al que existe d numeros de notas...
+        consola.print(f"[bold red]¡Error! No existe ninguna nota con el número {numero}.[/bold red]\n")
+
+# funcion para modificar una nota
+def modificar_nota(notas):
+    consola.print("\n[bold pink1]✏️ Modificar Nota ✏️[/bold pink1]")
+    
+    if not notas:
+        consola.print("[bold yellow]Aún no tienes notas guardadas para modificar.[/bold yellow]\n")
+        return
+    #reutilizo mi tablita
+    ver_notas(notas)
+    
+    entrada = consola.input("[light_cyan3]Introduce el número de la nota que quieres editar (o 'c' para cancelar): [/light_cyan3]").strip().lower()
+    
+    if entrada == 'c':
+        consola.print("[yellow]Operación cancelada. Todo se queda como estaba.[/yellow]\n")
+        return
+        
+    if not entrada.isdigit():
+        consola.print("[bold red]¡Error! Debes introducir un número válido.[/bold red]\n")
+        return
+        
+    numero = int(entrada)
+    
+    if 1 <= numero <= len(notas):
+        nota = notas[numero - 1]
+        titulo_antiguo = nota["titulo"]
+        
+        consola.print(f"\n[bold pink1]Editando: '{titulo_antiguo}'[/bold pink1]")
+        consola.print("[italic cyan](Pulsa Enter sin escribir nada para mantener lo que ya había)[/italic cyan]")
+        
+        # Pedimos los nuevos datos. Si el input está vacío (""), usamos el valor antiguo
+        nuevo_t = consola.input(f"[light_cyan3]Nuevo título [/light_cyan3][white]({nota['titulo']})[/white]: ").strip()
+        nuevo_titulo = nuevo_t if nuevo_t else nota["titulo"]
+        
+        nueva_c = consola.input(f"[light_cyan3]Nueva categoría [/light_cyan3][white]({nota.get('categoria', 'General')})[/white]: ").strip()
+        nueva_categoria = nueva_c if nueva_c else nota.get("categoria", "General")
+        
+        nuevo_con = consola.input(f"[light_cyan3]Nuevo contenido [/light_cyan3][white]({nota['contenido']})[/white]: ").strip()
+        nuevo_contenido = nuevo_con if nuevo_con else nota["contenido"]
+        
+        # mandamos pa notion
+        actualizar_en_notion(titulo_antiguo, nuevo_titulo, nueva_categoria, nuevo_contenido)
+        
+        # actualizamos nuestro diccionario local
+        nota["titulo"] = nuevo_titulo
+        nota["categoria"] = nueva_categoria
+        nota["contenido"] = nuevo_contenido
+        
+        consola.print("[bold green]¡Nota modificada con éxito en tu terminal![/bold green]\n")
+    else:
         consola.print(f"[bold red]¡Error! No existe ninguna nota con el número {numero}.[/bold red]\n")
 
 #menu secretillo pokedex
@@ -323,9 +475,9 @@ def abrir_pokedex():
     
     # Creamos un bucle infinito exclusivo para la Pokédex
     while True:
-        pokemon = consola.input("\n[yellow]Dime el nombre de un Pokémon o su número (escribe 'salir' para volver al menú): [/yellow]").strip().lower()
+        pokemon = consola.input("\n[yellow]Dime el nombre de un Pokémon o su número (escribe 'c' para volver al menú): [/yellow]").strip().lower()
         
-        if pokemon == 'salir':
+        if pokemon == 'c':
             consola.print("[italic yellow]Cerrando la Pokédex... ¡Volviendo a las notas! ☁️[/italic yellow]\n")
             break # Rompemos este bucle y volvemos al menú principal
             
@@ -416,7 +568,7 @@ def main():
     while True:
         mostrar_menu()
         #Uso el input para recoger la opcion
-        opcion = consola.input("[bold light_cyan3]Elige una opción (1 a 5 o prueba suerte con el comando secreto): [/bold light_cyan3]").strip().lower()
+        opcion = consola.input("[bold light_cyan3]Elige una opción (1 a 6 o prueba suerte a ver si encuentras los comandos secretos): [/bold light_cyan3]").strip().lower()
         
         if opcion == '1':
             add_nota(notas)
@@ -427,6 +579,8 @@ def main():
         elif opcion == '4':
             eliminar_nota(notas)
         elif opcion == '5':
+            modificar_nota(notas)
+        elif opcion == '6':
             consola.print("[yellow]Cerrando el gestor de notas. ¡Hasta prontooo! ☁️[/yellow]")
             break
         elif opcion == 'pokemon':

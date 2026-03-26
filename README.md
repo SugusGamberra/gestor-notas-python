@@ -234,6 +234,50 @@ Para conseguir esta sincronización, he creado la función `descargar_de_notion(
 
 Así, nada más ejecutar el script, el programa se conecta a la nube, absorbe la información y me rellena el menú con mis apuntes listos para usar ;3
 
+> Ostras aqui m di cuenta trasteando con la consola d q claro, no borra d notion, entonces tengo q crear esa funcion x.x
+> Ya de paso se me ocurre hacer una funcion para modificar bien titulo contenido categoria... asi queda xuli jeje
+
+### Funcion para borrar de Notion
+
+Creo la función `borrar_de_notion(titulo)` donde aplico dos conceptos nuevos de APIs:
+
+1. **Filtros en JSON:** En lugar de descargarme toda la base de datos para buscar la nota, le envío a Notion un `POST` al endpoint `/query` pasándole un bloque de `filter` en el JSON. Así, le digo a sus servidores que me devuelvan exclusivamente la nota cuyo campo "Título" coincida con el que quiero borrar, ahorrando datos y tiempo.
+2. **Método PATCH y Archivo:** Una vez que obtengo el `page_id` oculto de esa nota, hago una petición `requests.patch()`. En la API de Notion las páginas no tienen un comando "DELETE" puro, sino que se mandan a la papelera actualizando su propiedad `"archived"` a `True`.
+
+Llamando a esta función justo después del `.pop()` de mi lista local, mi Gestor de Notas y mi nube están 100% sincronizados en perfecta armonía
+
+Probamos y vemos que funciona a la perfeccion:
+
+<img src="./public/img/capturas/26.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+<img src="./public/img/capturas/27.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+### Funcion para modificar las notas (incluyendo q funke en notion)
+
+### Añadido de última hora: Modificar Notas y Método PATCH
+
+Como dimos CRUD (Create, Read, Update, Delete) añadí la **Opción 5: Modificar una nota** y moví para abajo la d salir.
+
+Para que la actualización también se reflejara en la API de Notion, tuve que dividir la lógica en dos peticiones HTTP usando la librería `requests`:
+
+1. **La Búsqueda (`POST` a `/query`):** Como mi lista local no guardaba los IDs internos que usa Notion, le digo a mi función que envíe una query filtrando por la propiedad "Título" buscando el título original de la nota. Cuando Notion me responde, extraigo el `page_id` de ese diccionario JSON.
+2. **La Actualización (`PATCH`):** Con el ID en la mano, apunto al endpoint específico de esa página y le mando una petición `PATCH` (que a diferencia de PUT, sirve para sobreescribir datos parciales). Ahí inyecto el nuevo título, categoría y contenido.
+
+A nivel de experiencia de usuario en la terminal, añadí un pequeño truco de *Clean Code*: al pedir los nuevos datos, si el usuario pulsa 'Enter' dejando el `input` vacío, el programa usa un operador ternario simple (`nuevo_t if nuevo_t else nota["titulo"]`) para conservar el texto que ya existía y que no tenga que reescribirlo entero.
+
+Para probarlo creé 2 notas:
+
+<img src="./public/img/capturas/28.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+Modifico solo el titulo por probar:
+
+<img src="./public/img/capturas/29.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+Y por último comprobamos que se actualizaron :P
+
+<img src="./public/img/capturas/30.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+---
+
 # ALERTA D SPOILER!!!
 
 > Estos son los menuse secretos, si no quieres hacerte spoiler no leas 👀👀👀👀
