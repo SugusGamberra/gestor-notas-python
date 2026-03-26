@@ -1,6 +1,6 @@
 # GESTOR DE NOTAS
 <div align="center">
-  <img src="" alt="WiP del logo" width="120" />
+  <img src="./public/img/cinnamostrong.png" alt="WiP del logo" width="120" />
 
   # Gestor de Notas Chili Morrón
   
@@ -12,6 +12,7 @@
   ![Python Badge](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff&style=plastic)
   ![Rich Badge](https://img.shields.io/badge/Rich-FFB6C1?logo=python&logoColor=white&style=plastic)
   ![Requests Badge](https://img.shields.io/badge/Requests-ADD8E6?logo=python&logoColor=white&style=plastic)
+  ![Dotenv Badge](https://img.shields.io/badge/Dotenv-ECD53F?logo=dotenv&logoColor=black&style=plastic)
 </div>
 
 
@@ -176,3 +177,44 @@ La opción 4 nos expideige mostrar las notas, pedir un número, tolerar que el u
 4. **Borrado con `.pop()`:** Pido confirmación final. Como el usuario ve las notas empezando por el número 1, pero las listas en Python empiezan a contar desde el índice 0, para acceder a la nota correcta le resto uno al número introducido (`numero - 1`). Una vez confirmada la acción, uso el método de listas `.pop(numero - 1)` para extraer y eliminar ese diccionario de nuestra lista `notas`.
 
 <img src="./public/img/capturas/11.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+---
+
+## Request para Notion
+
+### Seteando Notion
+
+He creado ya el espacio de [Notion](https://amenable-end-6ee.notion.site/Gestor-de-Notas-Proyecto-Python-32fa70607c7380ffb7cad909894dfe8c) para preparar la tabla que actuará como BBDD. Ahora, para integrarlo, tengo que crear el token en [mis integraciones](https://www.notion.so/profile/integrations/internal).
+
+<img src="./public/img/capturas/14.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+Sencillamente creo una **nueva integración**, le pondré de nombre "conector python", la subo y saco el TOKEN.
+
+> **Seguridad de credenciales (`python-dotenv`):** Como quería conectar la API de Notion, tenía que manejar un Token secreto y un ID de base de datos. Subir eso "hardcodeado" a GitHub es un peligro enorme. He replicado la estructura de variables de entorno usando un archivo `.env` (incluido en mi `.gitignore`) y la librería `python-dotenv`. Con `load_dotenv()` y `os.getenv()` consigo que mi script lea las claves localmente de forma 100% segura. Ciberseguridad básica jiji <3
+
+Lo siguiente es, desde la página de la bbdd de notion, saco de la barra de direcciones el ID (que es los numeros que van despues del último guión y antes del `?`) y lo añado al `.env`.
+
+Lo último para **Notion** será darle permisos, que es arriba a la derecha en los tres puntitos de la página, **conexiones**, selecciono mi integración y confirmo el acceso ;3
+
+<img src="./public/img/capturas/15.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+<img src="./public/img/capturas/16.png" width="300" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+Bueno, claro, en Notion he creado la tabla para la base de datos respetando los nombres de cada columna sin cambiar nadísima.
+
+### Función para subir a notion
+
+Con las credenciales ya a salvo, me puse a picar la función `subir_a_notion(titulo, categoria, contenido)`. Aquí es donde la librería `requests` actua
+
+Lo que hace la función es súper directo:
+
+1. **La URL y las Cabeceras**: Apunto a la API de Notion (`https://api.notion.com/v1/pages`) y le paso mi token y la versión de la API por las cabeceras para que me deje entrar y reconozca quién soy.
+2. **El Payload (JSON)**: Traduzco los datos de mi nota (título, categoría y contenido) al formato exacto de diccionarios anidados que exige Notion para rellenar las columnas.
+3. **La Petición POST y Control de Errores**: Uso un bloque `try/except` para hacer la llamada con `requests.post()`. Si el servidor de Notion me devuelve un código `HTTP 200` (todo OK), imprimo un mensajito verde en la terminal confirmando que se ha hecho. Si falla algo (por ejemplo, si no hay internet), capturo el error (`Exception`) para que el programa no pete y me avise con un mensaje en rojo.
+
+Esto se ejecuta en la función de `add_nota()` (la Opción 1 del menú) y, justo al final, después de comprobar que el usuario ha confirmado que quiere guardar la nota y de asegurarme de que el texto ha superado mi filtro llamo a la función pasándole las tres variables.
+
+Probamos que funcione y...
+
+<img src="./public/img/capturas/17.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+<img src="./public/img/capturas/18.png" width="300" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
