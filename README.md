@@ -147,11 +147,32 @@ Esta es la opción 3 y nos pide buscar una palabra clave tanto en el título com
 3. **Guardado de resultados:** Creo una lista vacía llamada `encontradas = []`. Uso un bucle `for` con `enumerate` para recorrer las notas. Si la palabra clave está `in` el título `or` `in` el contenido, añado una pequeña tupla a mi lista de encontradas guardando su índice original y la nota en sí.
 4. **Renderizado visual:** Si la lista de `encontradas` tiene algo, vuelvo a aprovechar el poder de `rich.Table` para imprimir solo las notas que han hecho *match*, manteniendo intacto su número original (así si luego el usuario quiere borrarla en la opción 4, sabrá exactamente qué número introducir). Si la lista está vacía, saco un texto en rojo indicando que no hay coincidencias.
 
+Vemos como la nota está guardada:
+
+<img src="./public/img/capturas/7.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+Buscamos por palabra clave probando que efectivamente da igual dónde situes mayúsculas o minúsculas siempre que escribas la palabra que sea a buscar:
+
+<img src="./public/img/capturas/8.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
 ### Eliminar una nota
 
 La opción 4 nos expideige mostrar las notas, pedir un número, tolerar que el usuario meta letras por error sin que el programa pete, y confirmar la acción antes de borrar nada. La función `eliminar_nota(notas)` resuelve todo esto así:
 
+<img src="./public/img/capturas/9.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
 1. **Reutilización de código (DRY):** Para mostrar la lista de notas numeradas, en lugar de volver a escribir un bucle `for`, he llamado directamente a mi propia función `ver_notas(notas)` dentro de esta. Aprovecho el código y la tabla de `rich`.
+
+<img src="./public/img/capturas/10.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
 2. **Validación de errores (`.isdigit()`):** Al pedir el número con un `input()`, el dato entra como *String*. Si yo intento hacer un `int("hola")`, Python lanzaría un error y el programa se cerraría de golpe. Para evitarlo, uso el método de cadenas `.isdigit()`, que devuelve `True` solo si todos los caracteres son números. Si mete letras, salta mi aviso en rojo y un `return` le devuelve al menú principal sanos y salvos :P
+
+<img src="./public/img/capturas/12.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
 3. **Lógica de índices:** Si el usuario pasa la validación, convierto el texto a número. Para comprobar que no me pide borrar la nota 99 si solo tengo 2, verifico que el número esté en el rango `1 <= numero <= len(notas)`. 
+
+<img src="./public/img/capturas/13.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
 4. **Borrado con `.pop()`:** Pido confirmación final. Como el usuario ve las notas empezando por el número 1, pero las listas en Python empiezan a contar desde el índice 0, para acceder a la nota correcta le resto uno al número introducido (`numero - 1`). Una vez confirmada la acción, uso el método de listas `.pop(numero - 1)` para extraer y eliminar ese diccionario de nuestra lista `notas`.
+
+<img src="./public/img/capturas/11.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
