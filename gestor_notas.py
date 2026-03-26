@@ -315,6 +315,56 @@ def eliminar_nota(notas):
         # Si mete un número superior al que existe d numeros de notas...
         consola.print(f"[bold red]¡Error! No existe ninguna nota con el número {numero}.[/bold red]\n")
 
+#menu secretillo pokedex
+def abrir_pokedex():
+    consola.print("\n[bold yellow]🦭 ¡Has descubierto la Pokédex Secreta! 🦭[/bold yellow]")
+    
+    # Creamos un bucle infinito exclusivo para la Pokédex
+    while True:
+        pokemon = consola.input("\n[yellow]Dime el nombre de un Pokémon o su número (escribe 'salir' para volver al menú): [/yellow]").strip().lower()
+        
+        if pokemon == 'salir':
+            consola.print("[italic yellow]Cerrando la Pokédex... ¡Volviendo a las notas! ☁️[/italic yellow]\n")
+            break # Rompemos este bucle y volvemos al menú principal
+            
+        if not pokemon:
+            continue
+
+        # Llamada a la API pública de Pokémon
+        url = f"https://pokeapi.co/api/v2/pokemon/{pokemon}"
+        
+        try:
+            respuesta = requests.get(url)
+            
+            if respuesta.status_code == 200:
+                datos = respuesta.json()
+                
+                # Extraemos la info (la API devuelve todo en minúsculas y medidas raras)
+                nombre = datos["name"].capitalize()
+                n_pokedex = datos["id"]
+                peso = datos["weight"] / 10 # Viene en hectogramos, lo pasamos a kg
+                altura = datos["height"] / 10 # Viene en decímetros, lo pasamos a m
+                
+                # Juntamos los tipos si tiene más de uno
+                tipos = ", ".join([t["type"]["name"].capitalize() for t in datos["types"]])
+                
+                # Montamos un panel wapardo con rich
+                info = (
+                    f"🔢 [bold]Nº Pokédex:[/bold] {n_pokedex}\n"
+                    f"🌟 [bold]Nombre:[/bold] {nombre}\n"
+                    f"🔥 [bold]Tipo:[/bold] {tipos}\n"
+                    f"📏 [bold]Altura:[/bold] {altura} m\n"
+                    f"⚖️ [bold]Peso:[/bold] {peso} kg"
+                )
+                
+                consola.print(Panel(info, title=f"💻 POKÉDEX DATA", border_style="yellow", expand=False))
+                
+            else:
+                consola.print(f"[bold red]¡Oh no! El Pokémon '{pokemon}' no aparece. O no existe, o se ha escondido de ti.[/bold red]")
+                
+        except Exception as e:
+            consola.print(f"[italic red]Error de conexión con la Liga Pokémon: {e}[/italic red]")
+
 #MAIN
 def main():
     #Bucle principal para que llame al resto de ufnciones
@@ -345,7 +395,7 @@ def main():
             consola.print("[yellow]Cerrando el gestor de notas. ¡Hasta prontooo! ☁️[/yellow]")
             break
         elif opcion == 'pokemon':
-            consola.print("[bold yellow]Abriendo la Pokedex... (Wip)[/bold yellow]")
+            abrir_pokedex()
         elif opcion == 'suerte':
             consola.print("[bold purple]Buscando en la Jesubiblia si hoy tendrás suerte o no... (WiP)[/bold purple]")
         else:

@@ -233,3 +233,32 @@ Para conseguir esta sincronización, he creado la función `descargar_de_notion(
 4. **Arranque en el `main()`**: Una vez que el bucle `for` reconstruye todos los diccionarios con el título, categoría y contenido, la función devuelve la lista llena. Finalmente, me fui a mi `def main()` y cambié la variable inicial: en lugar de arrancar con un `notas = []` vacío, ahora arranca ejecutando `notas = descargar_de_notion()`.
 
 Así, nada más ejecutar el script, el programa se conecta a la nube, absorbe la información y me rellena el menú con mis apuntes listos para usar ;3
+
+# ALERTA D SPOILER!!!
+
+> Estos son los menuse secretos, si no quieres hacerte spoiler no leas 👀👀👀👀
+
+## Easter Eggs
+
+### Pokemon
+
+Como me encantan los detalles ocultos y darle personalidad a mis proyectos, decidí programar comandos secretos en la validación del menú principal. Si el usuario escribe **pokemon** en lugar de un número se abre una Pokédex funcional conectada a internet en tiempo real.
+
+Para hacer esto realidad, he creado la función `abrir_pokedex()` y he vuelto a usar la librería `requests`, pero esta vez consumiendo la **PokeAPI** (una API pública y gratuita):
+
+1. **Submenú aislado**: La función atrapa al usuario en su propio bucle `while True`. Así puede buscar todos los Pokémon que quiera de forma seguida sin que el menú principal vuelva a saltar hasta que escriba la palabra `salir`.
+
+<img src="./public/img/capturas/20.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+2. **Petición GET**: Al ser una API pública, no necesito tokens ni cabeceras complejas. Simplemente hago un `requests.get()` inyectando el nombre del Pokémon que escribe el usuario directamente en la URL.
+
+<img src="./public/img/capturas/21.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+3. **Transformación de datos (Data Parsing)**: La API devuelve un JSON gigante. Extraigo solo lo vital (nombre, ID, tipos, altura y peso). Como la API devuelve la altura en decímetros y el peso en hectogramos, hago la conversión matemática (`/ 10`) en las propias variables para mostrar metros y kilos reales. Para limpiar los tipos (que vienen en una lista de diccionarios) uso `list comprehensions` y el método `.join()`.
+
+<img src="./public/img/capturas/22.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
+
+4. **Renderizado con ric**h: Empaqueto toda esa información limpia en una variable y uso el componente `Panel` de `rich` para imprimirlo con bordes amarillos
+5. **Control de errores (Try/Except)**: Si el usuario se inventa un nombre o escribe mal, la API devuelve un código distinto a 200 (normalmente un 404). Mi código lo detecta y en vez de crashear, saca un aviso amistoso en rojo. También capturo las excepciones de conexión por si nos quedamos sin internet.
+
+<img src="./public/img/capturas/23.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
