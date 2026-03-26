@@ -1,9 +1,18 @@
 # Importación de las librerías instaladas
 import sys
+import os
+import requests
+# cargo el .env
+from dotenv import load_dotenv
 
 from rich.console import Console #para la consola
 from rich.panel import Panel #para el menu
 from rich.table import Table #para las tablas
+
+# Token y el ID de la BBDD de notion
+load_dotenv()
+NOTION_TOKEN = os.getenv("NOTION_TOKEN")
+DATABASE_ID = os.getenv("DATABASE_ID")
 
 # Creación de la consola de rich
 consola = Console()
@@ -78,6 +87,44 @@ def ver_notas(notas):
     media = total_longitud / len(notas)
     consola.print(f"[italic pink1]Estadísticas: {len(notas)} notas guardadas | Longitud media: {media:.0f} caracteres[/italic pink1]\n")
     
+# Funcion para subir las notas a notion
+def subir_a_notion(titulo, categoria, contenido):
+    # con una peticion post envio la nota a la bbdd de notion
+    url = "https://api.notion.com/v1/pages"
+    
+    # Las cabeceras obligatorias que exige Notion:
+    headers = {
+        "Authorization": f"Bearer {NOTION_TOKEN}",
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28"
+    }
+    
+    # El diccionario con la estructura exacta que espera Notion
+    data = {
+        "parent": {"database_id": DATABASE_ID},
+        "properties": {
+            "Título": {
+                "title": [{"text": {"content": titulo}}]
+            },
+            "Categoría": {
+                "rich_text": [{"text": {"content": categoria}}]
+            },
+            "Contenido": {
+                "rich_text": [{"text": {"content": contenido}}]
+            }
+        }
+    }
+    
+    # Intentamos hacer el envío y capturamos si hay errores
+    try:
+        respuesta = requests.post(url, headers=headers, json=data)
+        if respuesta.status_code == 200:
+            consola.print("[italic green]Nota sincronizada en tu Notion ☁️[/italic green]\n")
+        else:
+            consola.print(f"[italic red]Algo falló al subir a Notion. Código de error: {respuesta.status_code}[/italic red]\n")
+    except Exception as e:
+        consola.print(f"[italic red]Error de conexión: {e}[/italic red]\n")
+
 # Añadir notas:
 def add_nota(notas):
     consola.print("\n[bold pink1]🗒️ Nueva Nota 🗒️[/bold pink1]")
@@ -118,6 +165,9 @@ def add_nota(notas):
         }
         notas.append(nueva_nota)
         consola.print("[bold green]¡Nota guardada con éxito! 🌸[/bold green]\n")
+        
+        # para subirlo a notion:
+        subir_a_notion(titulo, categoria, contenido)
     else:
         consola.print("[yellow]Operación cancelada. No se ha guardado nada.[/yellow]\n")
 
