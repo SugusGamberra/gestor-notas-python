@@ -121,6 +121,101 @@ def add_nota(notas):
     else:
         consola.print("[yellow]Operación cancelada. No se ha guardado nada.[/yellow]\n")
 
+# Buscar notas:
+def buscar_nota(notas):
+    # buscamos las notas por palabra clave y muestra los reseultado sen una tabla
+    consola.print("\n[bold pink1]🔍 Buscar Nota🔍 [/bold pink1]")
+    
+    # Foltro rápido por si no hay notas, y si no las hay que se salga
+    if not notas:
+        consola.print("[bold yellow]Aún no tienes notas guardadas.[/bold yellow]")
+        return
+        
+    #Pedimos la palabra clave y la pasamos a minúsculas para comparar bien
+    palabra = consola.input("[light_cyan3]Introduce la palabra clave a buscar: [/light_cyan3]").strip().lower()
+    
+    # Creamos una lista para guardar los resultados que coincidan
+    encontradas = []
+    
+    # Recorremos todas las notas usando enumerate para no perder su número original
+    for i, nota in enumerate(notas, start=1):
+        # Buscamos el titulo 0 en el contenido pasandolo todo a minúsculas
+        if palabra in nota["titulo"].lower() or palabra in nota["contenido"].lower():
+            # lo guardamos con el número original y el diccionario de la nota
+            encontradas.append((i, nota))
+    
+    # Muestro los resultados
+    if encontradas:
+        consola.print(f"\n[bold green]Se ha encontrado {len(encontradas)} coincidencia(s)! 🌸[/bold green]")
+        
+        # Reutilizamos la tabla cuki de rich
+        tabla = Table(border_style="pink1", header_style="bold light_cyan3")
+        tabla.add_column("Nº Original", justify="center", style="cyan")
+        tabla.add_column("Título", style="bold magenta")
+        tabla.add_column("Categoría", justify="center", style="pink1")
+        tabla.add_column("Contenido", style="white")
+        
+        for num_original, nota in encontradas:
+            tabla.add_row(
+                str(num_original),
+                nota["titulo"],
+                nota.get("categoria", "General"),
+                nota["contenido"]
+            )
+        
+        consola.print(tabla)
+        print("\n")
+    
+    else:
+        consola.print(f"\n[bold red]No se han encontrado coincidencias con '{palabra}'.[/bold red]\n")
+        
+# eliminar notas:
+def eliminar_nota(notas):
+    #Muestra las notas y permite eliminar una de forma segura validando la entrada
+    consola.print("\n[bold pink1]🗑️ Eliminar Nota🗑️[/bold pink1]")
+    
+    # El filtro por si no hubieran notas
+    if not notas:
+        consola.print("[bold yellow]Aún no tienes notas guardadas.[/bold yellow]")
+        return
+    
+    # Mostramos las notas reutilizando la funcion que ya tenemos
+    ver_notas(notas)
+    
+    # Pedimos el numero y le damos la opcion d echarse para atras :P
+    entrada = consola.input("[light_cyan3]Introduce el número de la nota que quieres borrar (o 'c' para cancelar): [/light_cyan3]").strip().lower()
+    
+    if entrada == 'c':
+        consola.print("[yellow]Operación cancelada. Tus notas están a salvo ☁️[/yellow]\n")
+        return
+    
+    # Valido que el usuario no haya metido letras por error
+    if not entrada.isdigit():
+        consola.print("[bold red]¡Error! Debes introducir un número válido, no letras ni símbolos.[/bold red]\n")
+        return
+    
+    # Si apasmos el filtro anterior ya podemos convertirlo a entero de forma segura
+    numero = int(entrada)
+    
+    # Comprobamos si el número existe en nuestra lista
+    if 1 <= numero <= len(notas):
+        # Sacamos el título de la nota antes de borrarla para ponerlo enn el menú del mensaje
+        nota_a_borrar = notas[numero - 1]
+        titulo = nota_a_borrar["titulo"]
+        
+        #confirmacioon final
+        confirmacion = consola.input(f"[bold red]⚠️ ¿Seguro/a que quieres borrar PARA SIEMPRE la nota '{titulo}'? (s/n): [/bold red]").strip().lower()
+        
+        if confirmacion == 's':
+            notas.pop(numero - 1)
+            consola.print(f"[bold green]¡Nota '{titulo}' eliminada con éxito![/bold green]\n")
+        else:
+            consola.print("[yellow]Operación cancelada. La nota sigue guardada.[/yellow]\n")
+        
+    else:
+        # Si mete un número superior al que existe d numeros de notas...
+        consola.print(f"[bold red]¡Error! No existe ninguna nota con el número {numero}.[/bold red]\n")
+
 #MAIN
 def main():
     #Bucle principal para que llame al resto de ufnciones
@@ -142,9 +237,9 @@ def main():
         elif opcion == '2':
             ver_notas(notas)
         elif opcion == '3':
-            consola.print("[yellow]Has elegido buscar una nota (WiP)[/yellow]")
+            buscar_nota(notas)
         elif opcion == '4':
-            consola.print("[yellow]Has elegido eliminar una nota (WiP)[/yellow]")
+            eliminar_nota(notas)
         elif opcion == '5':
             consola.print("[yellow]Cerrando el gestor de notas... (WiP)[/yellow]")
             break

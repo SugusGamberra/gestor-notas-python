@@ -137,3 +137,21 @@ Ahora, para ver como funciona en terminal:
 <img src="./public/img/capturas/6.png" width="500" style="border-radius: 15px; box-shadow: 5px 5px 15px rgba(0,0,0,0.4);">
 
 > Por hoy desconecto! Mañana sigo :3 (Quiero dejar super bien especificado absolutamente todo, así que sorry por ser tan transparente HAHAHAH mi vena de laboratorio me anima a apuntar absolutamente TODO)
+
+### Buscar una nota
+
+Esta es la opción 3 y nos pide buscar una palabra clave tanto en el título como en el contenido. He creado la función `buscar_nota(notas)` y la he estructurado así:
+
+1. **Control inicial:** Al igual que en la opción 2, hago un `if not notas:` para salir rápido de la función si la lista está vacía y no hacer trabajar al programa a lo tonto.
+2. **Transformación a minúsculas:** El PDF exige que la búsqueda no distinga mayúsculas de minúsculas. Para solucionarlo, aplico el método `.lower()` tanto a la palabra que introduce el usuario como a los textos de los diccionarios a la hora de compararlos, así nunca falla
+3. **Guardado de resultados:** Creo una lista vacía llamada `encontradas = []`. Uso un bucle `for` con `enumerate` para recorrer las notas. Si la palabra clave está `in` el título `or` `in` el contenido, añado una pequeña tupla a mi lista de encontradas guardando su índice original y la nota en sí.
+4. **Renderizado visual:** Si la lista de `encontradas` tiene algo, vuelvo a aprovechar el poder de `rich.Table` para imprimir solo las notas que han hecho *match*, manteniendo intacto su número original (así si luego el usuario quiere borrarla en la opción 4, sabrá exactamente qué número introducir). Si la lista está vacía, saco un texto en rojo indicando que no hay coincidencias.
+
+### Eliminar una nota
+
+La opción 4 nos expideige mostrar las notas, pedir un número, tolerar que el usuario meta letras por error sin que el programa pete, y confirmar la acción antes de borrar nada. La función `eliminar_nota(notas)` resuelve todo esto así:
+
+1. **Reutilización de código (DRY):** Para mostrar la lista de notas numeradas, en lugar de volver a escribir un bucle `for`, he llamado directamente a mi propia función `ver_notas(notas)` dentro de esta. Aprovecho el código y la tabla de `rich`.
+2. **Validación de errores (`.isdigit()`):** Al pedir el número con un `input()`, el dato entra como *String*. Si yo intento hacer un `int("hola")`, Python lanzaría un error y el programa se cerraría de golpe. Para evitarlo, uso el método de cadenas `.isdigit()`, que devuelve `True` solo si todos los caracteres son números. Si mete letras, salta mi aviso en rojo y un `return` le devuelve al menú principal sanos y salvos :P
+3. **Lógica de índices:** Si el usuario pasa la validación, convierto el texto a número. Para comprobar que no me pide borrar la nota 99 si solo tengo 2, verifico que el número esté en el rango `1 <= numero <= len(notas)`. 
+4. **Borrado con `.pop()`:** Pido confirmación final. Como el usuario ve las notas empezando por el número 1, pero las listas en Python empiezan a contar desde el índice 0, para acceder a la nota correcta le resto uno al número introducido (`numero - 1`). Una vez confirmada la acción, uso el método de listas `.pop(numero - 1)` para extraer y eliminar ese diccionario de nuestra lista `notas`.
