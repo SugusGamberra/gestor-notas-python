@@ -253,8 +253,6 @@ Probamos y vemos que funciona a la perfeccion:
 
 ### Funcion para modificar las notas (incluyendo q funke en notion)
 
-### Añadido de última hora: Modificar Notas y Método PATCH
-
 Como dimos CRUD (Create, Read, Update, Delete) añadí la **Opción 5: Modificar una nota** y moví para abajo la d salir.
 
 Para que la actualización también se reflejara en la API de Notion, tuve que dividir la lógica en dos peticiones HTTP usando la librería `requests`:
