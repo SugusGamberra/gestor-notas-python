@@ -325,3 +325,20 @@ Lo wapo de esto es que están sincronizados. Si el día de mañana decido actual
 ---
 
 > Y hasta aquí, fin del proyecto!! He intentado documentar el proceso de creación de absolutamente todo para que quede constancia, de forma más cercana, todos los pasos dados para obtener un gestor de notas bonito bonito :P
+
+---
+
+Para usar tu con tu bbdd solo tienes q crear un .env con:
+
+```bash
+NOTION_TOKEN=""
+DATABASE_ID=""
+```
+
+Entre las comillas le tienes q poner el token q generes en notion, que mas arribita esta explicado, igual es super intuitivo.
+
+Para la bbdd de notion tienes que crear una en el lado que quieras de tu agenda o lo que sea, escribes /base y eliges la opción de **base de datos integrada**. Le pones a la primera columna Título, a la segunda Categoría y a la 3a Contenido, estas dos ultimas le pones el tipo Texto. Ahora importante, le das a los 3 puntitos de tu tabla y le das a la opcion de ver tabla. Se te abrirá en el navegador, ahí seleccionas de la url de arriba desde después del `-` hasta el final, pa quie lo veas de ejemplo lo que sería "**rastrojodenumerosyletras**":
+
+`https://amenable-end-6ee.notion.site/Tu-BBDD-rastrojodenumerosyletras`
+
+Yastaria ;3
